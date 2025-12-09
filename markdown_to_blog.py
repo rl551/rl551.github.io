@@ -437,7 +437,7 @@ def render_bibliography(names_str):
         ordered_entries.extend(entry for _, entry in entries)
     if not ordered_entries:
         return ""
-    entries_html = ''.join(
+    entries_html = '\n'.join(
         f'<p class="bibliography-entry"><span class="bibliography-index">[{idx}]</span><span class="bibliography-text">{format_reference_entry(entry)}</span></p>'
         for idx, entry in enumerate(ordered_entries, start=1)
     )
