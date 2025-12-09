@@ -646,18 +646,42 @@ def transform_text(segment, allow_figures=True):
             return ''
         return '\n\n' + '\n'.join(f"- {item}" for item in items) + '\n\n'
     segment = ITEMIZE_PATTERN.sub(convert_itemize, segment)
-    replacements = [
-        (r'\\textbf\{([^{}]+)\}', r'**\1**'),
-        (r'\\textit\{([^{}]+)\}', r'*\1*'),
-        (r'\\emph\{([^{}]+)\}', r'*\1*'),
-        (r'\\underline\{([^{}]+)\}', r'<u>\1</u>'),
+    # Handle LaTeX commands with proper nested brace support
+    def handle_latex_command(segment, command, replacement_func):
+        result = []
+        i = 0
+        token = f'\\{command}{{'
+        while i < len(segment):
+            idx = segment.find(token, i)
+            if idx == -1:
+                result.append(segment[i:])
+                break
+            result.append(segment[i:idx])
+            brace_start = idx + len(token) - 1  # Position of opening brace
+            content, end_pos = extract_enclosed(segment, brace_start, '{', '}')
+            if content is not None:
+                result.append(replacement_func(content))
+                i = end_pos
+            else:
+                result.append(token)
+                i = idx + len(token)
+        return ''.join(result)
+    
+    # Apply LaTeX command replacements with proper brace handling
+    segment = handle_latex_command(segment, 'textbf', lambda x: f'**{x}**')
+    segment = handle_latex_command(segment, 'textit', lambda x: f'*{x}*')
+    segment = handle_latex_command(segment, 'emph', lambda x: f'*{x}*')
+    segment = handle_latex_command(segment, 'underline', lambda x: f'<u>{x}</u>')
+    segment = handle_latex_command(segment, 'textsc', lambda x: x.upper())
+    
+    # Simple regex replacements for commands without nested braces
+    simple_replacements = [
         (r'\\section\{([^{}]+)\}', r'\n## \1\n'),
         (r'\\subsection\{([^{}]+)\}', r'\n### \1\n'),
         (r'\\subsubsection\{([^{}]+)\}', r'\n#### \1\n'),
-        (r'\\textsc\{([^{}]+)\}', lambda m: m.group(1).upper()),
         (r'\\newline', r'<br>'),
     ]
-    for pattern, repl in replacements:
+    for pattern, repl in simple_replacements:
         segment = re.sub(pattern, repl, segment)
     if allow_figures:
         segment = replace_figures(segment)
