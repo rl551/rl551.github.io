@@ -8,7 +8,7 @@
 body {
     font-family: 'SF Pro Display', 'SF Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
     line-height: 1.6;
-    color: #333;
+    color: #111;
     background-color: #fff;
     font-size: 16px;
     font-weight: 400;
@@ -73,24 +73,25 @@ h1 {
 }
 
 h2 {
-    font-size: 1.3rem;
-    font-weight: 400;
-    margin-bottom: 15px;
-    color: #333;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 25px 0 12px;
+    color: #111;
+    letter-spacing: -0.01em;
 }
 
 h3 {
-    font-size: 1.1rem;
-    font-weight: 500;
-    margin-bottom: 8px;
-    color: #333;
-    letter-spacing: -0.005em;
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 20px 0 10px;
+    color: #222;
+    letter-spacing: -0.008em;
 }
 
 p {
     margin-bottom: 15px;
     line-height: 1.6;
-    color: #555;
+    color: #111;
 }
 
 a {
@@ -172,6 +173,13 @@ footer p {
     font-style: italic;
 }
 
+.blog-meta {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    font-style: italic;
+}
+
 /* Individual Blog Post Pages */
 .blog-nav {
     margin-bottom: 30px;
@@ -206,10 +214,144 @@ footer p {
 .blog-content ul {
     margin-bottom: 18px;
     padding-left: 25px;
+    list-style-type: disc;
+    font-family: inherit;
+    color: #111;
+    font-size: inherit;
 }
 
 .blog-content li {
     margin-bottom: 8px;
+    display: list-item;
+    font-family: inherit;
+    font-size: inherit;
+    color: #111;
+    line-height: 1.6;
+    font-weight: inherit;
+}
+
+.blog-content li::marker {
+    font-size: 1.2em;
+}
+
+.bibliography {
+    margin-top: 35px;
+}
+
+.bibliography h2 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #111;
+}
+
+.bibliography-entry {
+    margin-bottom: 18px;
+    line-height: 1.7;
+    color: #222;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.bibliography-index {
+    font-weight: 600;
+    color: #111;
+    min-width: 40px;
+}
+
+.bibliography-text {
+    flex: 1;
+}
+
+.image-with-caption {
+    text-align: center;
+    margin: 24px 0;
+}
+
+.image-caption {
+    margin-top: 6px;
+    margin-bottom: 18px;
+    font-style: italic;
+    color: #777;
+    text-align: center;
+}
+
+.center-environment {
+    text-align: center;
+    margin: 24px 0;
+}
+
+.center-environment img {
+    display: inline-block;
+    margin: 0 10px;
+    vertical-align: top;
+}
+
+.center-environment .image-with-caption {
+    display: inline-block;
+    margin: 0 10px;
+    vertical-align: top;
+}
+
+.algorithm-block {
+    background: #fff;
+    border: 1px solid #999;
+    border-top: 2px solid #333;
+    border-bottom: 2px solid #333;
+    padding: 16px 20px;
+    margin: 22px 0;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.algorithm-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 8px;
+}
+
+.algorithm-metadata {
+    margin-bottom: 4px;
+    font-family: 'Times New Roman', 'Cormorant Garamond', Georgia, serif;
+    font-size: 1rem;
+}
+
+.algorithm-label {
+    font-weight: 700;
+}
+
+.algorithm-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Times New Roman', 'Cormorant Garamond', Georgia, serif;
+    font-size: 1rem;
+}
+
+.algorithm-table td {
+    padding: 2px 6px;
+    vertical-align: top;
+}
+
+.algorithm-num {
+    width: 2.2em;
+    font-weight: 700;
+}
+
+.algorithm-body {
+    width: 65%;
+}
+
+.algorithm-comment-cell {
+    width: 35%;
+}
+
+.algorithm-comment {
+    font-style: italic;
+    color: #333;
+}
+
+.algorithm-keyword {
+    font-style: italic;
 }
 
 /* Blog post title links */

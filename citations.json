@@ -1,0 +1,26 @@
+{
+    "qian2025layeredunlearningadversarialrelearning": {
+        "title": "Layered Unlearning for Adversarial Relearning",
+        "authors": [
+            "Timothy Qian",
+            "Vinith Suriyakumar",
+            "Ashia Wilson",
+            "Dylan Hadfield-Menell"
+        ],
+        "year": "2025",
+        "url": "https://arxiv.org/abs/2505.09500",
+        "label": "Layered Unlearning for Adversarial Relearning"
+    },
+    "hu2025unlearningobfuscatingjoggingmemory": {
+        "title": "Unlearning or Obfuscating? Jogging the Memory of Unlearned LLMs via Benign Relearning",
+        "authors": [
+            "Shengyuan Hu",
+            "Yiwei Fu",
+            "Zhiwei Steven Wu",
+            "Virginia Smith"
+        ],
+        "year": "2025",
+        "url": "https://arxiv.org/abs/2406.13356",
+        "label": "Unlearning or Obfuscating? Jogging the Memory of Unlearned LLMs via Benign Relearning"
+    }
+}

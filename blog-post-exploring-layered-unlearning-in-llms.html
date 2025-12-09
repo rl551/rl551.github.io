@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exploring Layered Unlearning in LLMs - Raymond Luo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.js"></script>
+    
+    <!-- MathJax Configuration -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Raymond Luo</h1>
+            <nav>
+                <a href="index.html">About</a>
+                <a href="projects.html">Projects</a>
+                <a href="blog.html">Blog</a>
+            </nav>
+        </header>
+
+        <main>
+            <section>
+                <div class="blog-nav">
+                    <a href="blog.html">← Back to Blog</a>
+                </div>
+                
+                <article class="blog-post-full">
+                    <h1>Exploring Layered Unlearning in LLMs</h1>
+                    <p class="blog-meta">By Ruiyang (Raymond) Luo and Jason Ng • December 9, 2025</p>
+                    
+                    <div class="blog-content">
+                        <h2>Introduction and Background</h2>
+<p>Large Language Models (LLMs) have excelled at their ability to learn, retain, and apply vast amounts of human knowledge. However, having an AI understand data to this scale poses serious safety risks for humanity. It has become increasingly important to develop <strong>machine unlearning</strong> techniques, a process which selectively removes information that humans want LLMs to forget. Such information includes copyright text and instructions to create hazardous materials. In an ideal world, proper unlearning should make it very difficult for models to "relearn" the unlearned information. However, in practice, current unlearning techniques are fragile and often easily bypassed through adversarial relearning. In particular, a recent paper published by by Carnegie Mellon researchers <span class="citation"><a href="https://openreview.net/forum?id=fMNRYBvcQN" target="_blank" rel="noopener">Hu et al. (2025)</a></span> demonstrates that current unlearning techniques may merely <em>obfuscate</em> the information&mdash;suppressing the model's likelihood of generating it&mdash;rather than actually unlearning it. Moreover, they show that this such information can be relearned through novel relearning attacks.</p>
+<p>In 2025, <span class="citation"><a href="https://arxiv.org/abs/2505.09500" target="_blank" rel="noopener">Qian et al. (2025)</a></span> introduced a novel algorithm called <strong>Layer Unlearning</strong> (LU) which tries to solve the problem of adversarial relearning. Conceptually, LU unlearns a forget data set in layers, rather than all at once. The below image is taken from their paper, which rigorously presents the algorithm.</p>
+<div class="image-with-caption"><img src="6.7960 Final Project/Algorithm1.png" alt="Algorithm1" style="width: 100%; height: auto" /><div class="image-caption">Figure 1: <span class="citation"><a href="https://arxiv.org/abs/2505.09500" target="_blank" rel="noopener">Qian et al. (2025)</a></span>'s LU algorithm</div></div>
+
+<p>As we can see, the forget set $F$ is iteratively updated every iteration by $F\leftarrow F\cup F_i$ and the retain set is also updated by $R\leftarrow R\setminus F_i$.</p>
+<h2>Research Questions and Motivation</h2>
+<h3>Weighted Layered Unlearning</h3>
+<p>One question about the LU algorithm that naturally arises is the unevenness of data unlearning. For example, we will only spend one iteration unlearning the last dataset in the sequence $F_k$, whereas we will spend $k$ iterations unlearning the first dataset in the sequence $F_1$. Moreover, for half the datasets in the sequence, we spend more time trying to retain them than unlearn them.</p>
+<p>We propose a simple but novel modification that we hope will alleviate this problem. The modification comes from the intuitive understanding that the time it takes to unlearn a set of information is directly proportional to the set's size. More specifically, we weight the size of a forget dataset proportionally to the amount of iterations we spend unlearning it in order to give each fold an "equal" layer of protection. That is, $|F_i|\propto k+1-i$. This modification is especially motivated after extended discussion with Timothy Qian, the author of the LU paper. In particular, he remarks that our approach seems reasonable and promising and that he never experimented with the size of the sets in the forget dataset sequence. We describe our modified algorithm, called <strong>Weighted Layered Unlearning</strong> (WLU) below.</p>
+<div class="image-with-caption"><img src="6.7960 Final Project/WLU.png" alt="WLU" style="width: 100%; height: auto" /><div class="image-caption">Figure 2: Weighted Layered Unlearning Algorithm</div></div>
+
+<h3>Semantically Related Topics</h3>
+<p>The beauty of the LU algorithm is that it forces the model to learn separate mechanisms that inhibit knowledge on each specific fold, not just the entire dataset in general. While LU effectively forces the model to construct distinct inhibition mechanisms for specific data folds, a critical gap remains in understanding the temporal dynamics of semantic erasure. 
+This is particularly evident when unlearning semantically related topics. For example, we would intuitively expect that unlearning a subject like mathematics would inherently degrade a model's proficiency in physics, given the high degree of shared representations between the two domains. However, the chronology of this unlearning remains unexplored. Given that these subjects often rely on shared inductive biases, we investigate whether their placement in the forget dataset sequence impacts the model's post-unlearning results.</p>
+<ul>
+<li><strong>Semantic Clustering:</strong> Does clustering related topics (i.e. unlearning them at consecutive or close indices in the forget data set) result in a cleaner, more complete erasure of the topics?</li>
+<li><strong>Semantic Spacing:</strong> Conversly, does unlearning them at spread out indices (with unrelated topics in between) yield better and more stable results?</li>
+</ul>
+<p>This research moves beyond simple data deletion to explore the optimal topology of the unlearning sequence, aiming to maximize erasure on related concepts.</p>
+<h2>Research Methods and Results</h2>
+<p>In this section, we give a formal overview of our research methods and results.</p>
+<h3>Methods</h3>
+<p>Firstly, the dataset we will use for all our experiments is the <a href="https://huggingface.co/datasets/cais/mmlu" target="_blank" rel="noopener">MMLU dataset</a>, which stands for "Massive Multitask Language Understanding". Our data was trained on the using the MIT ORCD (Office of Research Computing and Data) Engaging Cluster. For compute, we used an Nvidia L40S and an Nvidia H100. We trained on $3$ models, all taken from HuggingFace. They include:</p>
+<ul>
+<li>Q3-06: <a href="https://huggingface.co/Qwen/Qwen3-0.6B" target="_blank" rel="noopener">Qwen/Qwen3-0.6B</a> (0.6 billion parameters)</li>
+<li>Meta: <a href="https://huggingface.co/meta-llama/Llama-3.2-1B" target="_blank" rel="noopener">meta-llama/Llama-3.2-1B</a> (1 billion parameters)</li>
+<li>Q3-17: <a href="https://huggingface.co/Qwen/Qwen3-1.7B" target="_blank" rel="noopener">Qwen/Qwen3-1.7B</a> (1.7 billion parameters)</li>
+</ul>
+<p>For future reference, we will only refer to the models by their above abbreviations.</p>
+<p>The high level approach for our experiments that readers should keep in mind is: unlearn $\to$ relearn $\to$ MCQ-based evaluation.</p>
+<p>For the question about WLU, we plan to implement both the LU and WLU unlearning algorithm. We will do this with $1+2+3=6$ subjects chosen from the MMLU dataset. In the WLU algorithm, $3$ of the subjects will be in the first forget dataset, $2$ of the subjects will be in the second forget dataset, and the last subject will be in the final forget dataset. In the LU algorithm, each forget set will contain $2$ subjects. Certain subjects will have high degrees of overlap (such as anatomy, biology, and clincal knowledge), in order to test the model's ability to combat adversarial relearning. Our approach to evaluation for this question will be the same as the one used by <span class="citation"><a href="https://arxiv.org/abs/2505.09500" target="_blank" rel="noopener">Qian et al. (2025)</a></span> for his experiments on the <em>Zephyr-7B-$\beta$</em> model. Specifically, after we unlearn, we relearn on each subject and evaluate our performance on other subjects. This is because the point of the LU and WLU algorithm is to combat adversarial relearning. Of course, the performance on the relearned subject is not important and irrelevant. We will compare the relearning performance of the model between the WLU algorithm and the LU algorithm. The dataset will be unlearning and relearning on will be the MMLU dataset for both algorithms.</p>
+<p>For the question about semantically related topics, we plan to use the original LU algorithm. Then, we plan to unlearn specific topics from the MMLU dataset with $k=4$ folds using two different forget dataset sequences. These two sequences are shown below.</p>
+<ul>
+<li>College Physics, Psychology, U.S. Foreign Policy, College Mathematics</li>
+<li>College Physics, College Mathematics, Psychology, U.S. Foreign Policy</li>
+</ul>
+<p>As shown, one sequence has the semantically related topics (math and physics) in consecutive indices, whereas the other sequence places them far apart. For our evaluation, we will attempt to relearn physics and then see the performance on math. We will also attempt to relearn math and see the performance on physics. We do this for both forget sequences after unlearning. </p>
+<p>Our specific "performance evaluation" after relearning will be a simple MCQ evaluation. The respective model will be given $100$ MCQ questions and will be asked to output its answer in exactly $1$ token. Its performance will be the number of questions answered correctly divided by $100$. A lower performance means better unlearning results, as the model has difficulty relearning.</p>
+<p>We unlearn on the training data using NPO (Negative Preference Optimization) and then attempt to relearn the data using DPO (Direct Preference Optimization). NPO can be viewed as DPO (Direct Preference Optimization) without any positive samples. We can see this difference in their loss functions.
+\begin{align*}
+    \mathcal{L}_{\mathsf{DPO}}&=-\mathbb{E}\left[\log\sigma\left(\beta\log\frac{\pi_\theta(y_w\mid x)}{\pi_{\mathsf{ref}}(y_w\mid x)}-\beta\log\frac{\pi_\theta(y_\ell\mid x)}{\pi_{\mathsf{ref}}(y_\ell\mid x)}\right)\right] \\
+    \mathcal{L}_{\mathsf{NPO}}&=-\mathbb{E}\left[\log\sigma\left(-\beta\log\frac{\pi_\theta(y\mid x)}{\pi_{\mathsf{ref}}(y\mid x)}\right)\right].
+\end{align*}</p>
+<p>In particular, in the DPO loss function, $y_w$ is the winning response and $y_\ell$ is the losing response. We select NPO as our unlearning function for its stability in contrast to the more standard approach, gradient ascent. Indeed, <span class="citation"><a href="https://openreview.net/forum?id=MXLBXjQkmb" target="_blank" rel="noopener">Zhang et al. (2024)</a></span> gives significant empirical evidence that gradient ascent has significantly higher probability of suffering a catastrophic collapse of the model's abilities on several unlearning tasks. This idea can also be justified theoretically since gradient ascent maximizes loss on the forget set, which means it naturally leads to more unbounded results. In particular, <span class="citation"><a href="https://openreview.net/forum?id=MXLBXjQkmb" target="_blank" rel="noopener">Zhang et al. (2024)</a></span> gives a linear bound for gradient ascent's collapse rate to the retain dataset, whereas NPO is shown to have a logarithmic bound. This design choice increases the likelihood that we have better, more interpretable results.</p>
+<h3>Results</h3>
+<p>We first give our results for the WLU task.</p>
+<div class="center-environment"><img src="6.7960 Final Project/Q3-06WLU.png" alt="Q3-06WLU" style="width: 45%; height: auto" />
+<img src="6.7960 Final Project/Q3-06LU.png" alt="Q3-06LU" style="width: 45%; height: auto" /><div class="image-caption">Figure 3: Q3-06's results on WLU and LU.</div></div>
+
+<div class="center-environment"><img src="6.7960 Final Project/MetaWLU.png" alt="MetaWLU" style="width: 45%; height: auto" />
+<img src="6.7960 Final Project/MetaLU.png" alt="MetaLU" style="width: 45%; height: auto" /><div class="image-caption">Figure 4: Meta's results on WLU and LU.</div></div>
+
+<div class="center-environment"><img src="6.7960 Final Project/Q3-17WLU.png" alt="Q3-17WLU" style="width: 45%; height: auto" />
+<img src="6.7960 Final Project/Q3-17LU.png" alt="Q3-17LU" style="width: 45%; height: auto" /><div class="image-caption">Figure 5: Q3-17's results on WLU and LU.</div></div>
+
+<p>Now, we show our results for the semantically related task.</p>
+<div class="center-environment"><img src="6.7960 Final Project/Q3-06Far.png" alt="Q3-06Far" style="width: 45%; height: auto" />
+<img src="6.7960 Final Project/Q3-06Close.png" alt="Q3-06Close" style="width: 45%; height: auto" /><div class="image-caption">Figure 6: Q3-06's results on semantically related topics.
+<br>
+The unlearned accuracies were Physics: $6\%$, Mathematics: $14\%$ for Close.
+<br>
+The unlearned accuracies were Physics: $4\%$, Mathematics: $40\%$ for Far</div></div>
+
+<div class="center-environment"><img src="6.7960 Final Project/Meta1BClose.png" alt="Meta1BClose" style="width: 45%; height: auto" />
+<img src="6.7960 Final Project/Meta1BFar.png" alt="Meta1BFar" style="width: 45%; height: auto" /><div class="image-caption">Figure 7: Meta's results on semantically related topics.
+<br>
+The unlearned accuracies were Physics: $4\%$, Mathematics: $8\%$ for Close.
+<br>
+The unlearned accuracies were Physics: $1\%$, Mathematics: $10\%$ for Far.</div></div>
+
+<div class="center-environment"><img src="6.7960 Final Project/Q3-17Far.png" alt="Q3-17Far" style="width: 45%; height: auto" />
+<img src="6.7960 Final Project/Q3-17Close.png" alt="Q3-17Close" style="width: 45%; height: auto" /><div class="image-caption">Figure 8: Q3-17's results on semantically related topics.
+<br>
+The unlearned accuracies were Physics: $9\%$, Mathematics: $21$% for Close.
+<br>
+The unlearned accuracies were Physics: $8\%$, Mathematics: $57\%$ for Far.</div></div>
+
+<h2>Analysis</h2>
+<p>We would first like to touch on our choice to not use the Tinker API, which was available to us for free usage. The Tinker API uses LoRA for fine-tuning LLMs. Many papers, including <span class="citation"><a href="https://arxiv.org/abs/2405.09673" target="_blank" rel="noopener">Biderman et al. (2024)</a></span> and <span class="citation"><a href="https://arxiv.org/abs/2410.21228" target="_blank" rel="noopener">Shuttleworth et al. (2025)</a></span> find that LoRA often yields suboptimal results as compared to full-rank updates. Specifically, these studies show that while LoRA is computationally efficient, it is much more prone to catastrophic forgetting and creates a more "superficial" forgetting layer than a complete erasure. As a result, we chose to do our own fine-tuning of models, using NPO and DPO as mentioned above, and not use the Tinker API.</p>
+<p>We also believe that some of the unusually high accuracies in our results may be due to us not adjusting our learning rate ($8\cdot 10^{-6}$) properly for a model with 1.7B parameters. </p>
+<h3>Weighted Layered Unlearning</h3>
+<p>Our results show that WLU performs nontrivially better than LU. For example, in Q3-06, WLU only achieved a maximal $14\%$ increase in performance for a task whereas LU yields multiple increases $\geq 20\%$. The difference is even more stark in Q3-17. LU performs quite poorly on this model, and achieves many accuracy increases $\geq 40\%$ after retraining. The performance of WLU is much more stable, and mostly achieves accuracy increases around or under $10\%$.</p>
+<p>As mentioned before, we hypothesize this has to do a lot because of the more evenly distributed unlearning that WLU performs.</p>
+<h3>Semantically Related Topics</h3>
+<p>Unfortunately, we found no significant difference in performance between clustering semantically related topics and spreading them out. For example, in Q3-06, having the semantically related topics close and far yielded no difference in results. </p>
+<p>One possible reason for the lack of results is because of our small dataset. Each subject in the MMLU dataset only had around $100$ or so questions and our value of $k=4$ was also quite small. It may be the case that only having two semantically related topics in between math and physics may not be enough to create a noticable difference in performance. Perhaps more diversification into the humanities, arts, and other miscellaneous topics would have yielded better results.</p>
+<p>Another possible reason were because the later forget sets in the training runs had high variance in the unlearning accuracies. For example, Q3-17, Far finished with $57\%$ accuracy on Math, whereas Q3-17, Close finished with only $21\%$ accuracy. Because the starting points were so different, comparing the relative relearning gain may be influenced by a confounding variable.</p>
+<h2>Conclusion and Further Directions</h2>
+<p>Our research on WLU vs LU shows improvements for WLU for all the models we tested on. We hypothesize this is likely due to the more evenly distributed unlearning that WLU performs, and believe that future improvements will likely be those that maintain the layering but make the process of unlearning even more uniform. Our research on semantically related topics shows ambiguity in if an ordering is better than the other. However, we do not rule out the idea of the two actually being ambiguous. In order to solve this though, for future research directions, we suggest training with significantly higher values of $k$ and diversifying to multiple semantically related topics, not just math and physics.</p>
+<p>As for further directions not disucssed previously, one possible further direction of research lies in the idea of a periodic method of unlearning and relearning. Discussing the topic with Qian, he mentioned that one possible area that he did not pursue but he believes is promising is an alternating pattern of unlearning and relearning, in order to develop different inhibitor mechanisms for each fold. However, one issue in which arises is how to construct this alternating pattern such that each fold (dataset) in the sequence receives an appropriate amount of time to unlearn and relearn. This issue, again, lies in the inherent sequential nature of the forget sequence. Another important design choice is then how to actually combine these inhibitors to create a "global inhibitor" for each fold. This is an area in which we could not figure out during the short time we had to do our project, but is something we will definitely keep in mind for the forseeable future.</p>
+<p>Other, more minor directions include further tinkering with our WLU algorithm. One possible direction is to try different weightings of sets, such as quadratic or $n\log n$. Another possible direction would be to implement our algorithms with different unlearning algorithms, such as gradient ascent or representation engineering. Finally, one way to scale this project up is to try to train on bigger models and more complicated datasets.</p>
+<p>We encourage anyone interested in this blog post to experiment with these ideas and let us know about their results and progress!</p>
+<div class="bibliography"><h2>References</h2><p class="bibliography-entry"><span class="bibliography-index">[1]</span><span class="bibliography-text">Dan Biderman, Jacob Portes, Jose Javier Gonzalez Ortiz, Mansheej Paul, Philip Greengard, Connor Jennings, Daniel King, Sam Havens, Vitaliy Chiley, Jonathan Frankle, Cody Blakeney, and John P. Cunningham. 2024. <a href="https://arxiv.org/abs/2405.09673" target="_blank" rel="noopener">LoRA Learns Less and Forgets Less</a>. <em>Preprint</em>, arXiv:2405.09673.</span></p><p class="bibliography-entry"><span class="bibliography-index">[2]</span><span class="bibliography-text">Dan Hendrycks, Collin Burns, Steven Basart, Andy Zou, Mantas Mazeika, Dawn Song, and Jacob Steinhardt. 2021. Measuring Massive Multitask Language Understanding. <em>Proceedings of the International Conference on Learning Representations (ICLR)</em>.</span></p><p class="bibliography-entry"><span class="bibliography-index">[3]</span><span class="bibliography-text">Dan Hendrycks, Collin Burns, Steven Basart, Andrew Critch, Jerry Li, Dawn Song, and Jacob Steinhardt. 2021. Aligning AI With Shared Human Values. <em>Proceedings of the International Conference on Learning Representations (ICLR)</em>.</span></p><p class="bibliography-entry"><span class="bibliography-index">[4]</span><span class="bibliography-text">Reece Shuttleworth, Jacob Andreas, Antonio Torralba, and Pratyusha Sharma. 2025. <a href="https://arxiv.org/abs/2410.21228" target="_blank" rel="noopener">LoRA vs Full Fine-tuning: An Illusion of Equivalence</a>. <em>Preprint</em>, arXiv:2410.21228.</span></p><p class="bibliography-entry"><span class="bibliography-index">[5]</span><span class="bibliography-text">Ruiqi Zhang, Licong Lin, Yu Bai, and Song Mei. 2024. <a href="https://openreview.net/forum?id=MXLBXjQkmb" target="_blank" rel="noopener">Negative Preference Optimization: From Catastrophic Collapse to Effective Unlearning</a>.</span></p><p class="bibliography-entry"><span class="bibliography-index">[6]</span><span class="bibliography-text">Shengyuan Hu, Yiwei Fu, Steven Wu, and Virginia Smith. 2025. <a href="https://openreview.net/forum?id=fMNRYBvcQN" target="_blank" rel="noopener">Unlearning or Obfuscating? Jogging the Memory of Unlearned LLMs via Benign Relearning</a>.</span></p><p class="bibliography-entry"><span class="bibliography-index">[7]</span><span class="bibliography-text">Timothy Qian, Vinith Suriyakumar, Ashia Wilson, and Dylan Hadfield-Menell. 2025. <a href="https://arxiv.org/abs/2505.09500" target="_blank" rel="noopener">Layered Unlearning for Adversarial Relearning</a>. <em>Preprint</em>, arXiv:2505.09500.</span></p></div>
+
+<h2>Code</h2>
+<p><a href="https://github.com/JasxnNg/6.7960-final" target="_blank" rel="noopener">Github</a></p>
+                    </div>
+                </article>
+            </section>
+        </main>
+
+        <footer>
+            <div class="contact-buttons">
+                <a href="mailto:rayluo@mit.edu" class="btn btn-email" title="Email">✉</a>
+                <a href="https://www.linkedin.com/in/raymondlu0/" target="_blank" class="btn btn-linkedin" title="LinkedIn">in</a>
+            </div>
+        </footer>
+    </div>
+</body>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.pseudocode) {
+        document.querySelectorAll('.pseudocode-script').forEach(function(el) {
+            var container = document.createElement('div');
+            container.className = 'pseudocode-container';
+            el.parentNode.insertBefore(container, el);
+            var code = el.textContent;
+            el.remove();
+            try {
+                pseudocode.render(code, container, {lineNumber: true});
+            } catch (err) {
+                container.textContent = code;
+            }
+        });
+    }
+});
+</script>
+
+</html>
