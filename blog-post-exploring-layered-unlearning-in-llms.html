@@ -50,7 +50,7 @@
 
 </p>
 <p><span class="citation"><a href="https://arxiv.org/abs/2505.09500" target="_blank" rel="noopener">Qian et al. (2025)</a></span> introduced a novel algorithm called <strong>Layered Unlearning</strong> (LU) which tries to solve the problem of adversarial relearning. Conceptually, LU unlearns a forget data set in layers (that we will now refer to as "folds"), rather than all at once. The below image is taken from their paper, which rigorously presents the algorithm.</p>
-<div class="image-with-caption"><img src="Algorithm1.png" alt="Algorithm1" style="width: 100%; height: auto" /><div class="image-caption">Figure 1: <span class="citation"><a href="https://arxiv.org/abs/2505.09500" target="_blank" rel="noopener">Qian et al. (2025)</a></span>'s LU algorithm</div></div>
+<div class="image-with-caption"><img src="6.7960 Final Project/Algorithm1.png" alt="Algorithm1" style="width: 100%; height: auto" /><div class="image-caption">Figure 1: <span class="citation"><a href="https://arxiv.org/abs/2505.09500" target="_blank" rel="noopener">Qian et al. (2025)</a></span>'s LU algorithm</div></div>
 
 <p>As a practical example, we can imagine this to be a dataset containing 3 distinct subjects: bioweapons, hacking, and personal data. We start by attempting to forget bioweapons, but try to retain hacking and personal data. In the next iteration, we add the hacking dataset to the forget set and remove it from the retain set. We repeat until we have forgotten all of the information.</p>
 <p> Through our research, we want to explore modifications and applications of the LU algorithm that minimize the effect of relearning one subject on the accuracy of other subjects.</p>
@@ -58,7 +58,7 @@
 <h3>Weighted Layered Unlearning</h3>
 <p>One question about the LU algorithm that naturally arises is the unevenness of data unlearning. For example, we will only spend one iteration unlearning the last dataset in the sequence whereas we will spend multiple iterations unlearning the first dataset in the sequence. Moreover, for half the datasets in the sequence, we spend more time trying to retain them than unlearn them.</p>
 <p>We propose a simple but novel modification that we hope will alleviate this problem. The modification comes from the intuitive understanding that the time it takes to unlearn a set of information is directly proportional to the set's size. More specifically, we weight the size of a forget dataset proportionally to the amount of iterations we spend unlearning it in order to give each fold an "equal" layer of protection. That is, $|F_i|\propto k+1-i$. We describe our modified algorithm, called <strong>Weighted Layered Unlearning</strong> (WLU) below.</p>
-<div class="image-with-caption"><img src="WLU.png" alt="WLU" style="width: 100%; height: auto" /><div class="image-caption">Figure 2: Weighted Layered Unlearning Algorithm</div></div>
+<div class="image-with-caption"><img src="6.7960 Final Project/WLU.png" alt="WLU" style="width: 100%; height: auto" /><div class="image-caption">Figure 2: Weighted Layered Unlearning Algorithm</div></div>
 <p>Formally, our research question is: How does WLU compare to LU in terms of adversarial relearning?</p>
 <h3>Semantically Related Topics</h3>
 <p>The beauty of the LU algorithm is that it forces the model to learn separate mechanisms that inhibit knowledge on each specific fold, not just the entire dataset in general. While LU effectively forces the model to construct distinct inhibition mechanisms for specific data folds, a critical gap remains in understanding the importance of the ordering of the forget dataset sequence.
@@ -95,32 +95,32 @@ This is particularly evident when unlearning semantically related topics. For ex
 <p>In particular, in the DPO loss function, $y_w$ is the winning response and $y_\ell$ is the losing response. We select NPO as our unlearning function for its stability in contrast to the more standard approach, gradient ascent. Indeed, <span class="citation"><a href="https://openreview.net/forum?id=MXLBXjQkmb" target="_blank" rel="noopener">Zhang et al. (2024)</a></span> gives significant empirical evidence that gradient ascent has significantly higher probability of suffering a catastrophic collapse of the model's abilities on several unlearning tasks and that NPO manages to forget more than other methods. This idea can also be justified theoretically since gradient ascent maximizes loss on the forget set, which means it naturally leads to more unbounded results. In particular, <span class="citation"><a href="https://openreview.net/forum?id=MXLBXjQkmb" target="_blank" rel="noopener">Zhang et al. (2024)</a></span> gives a linear bound for gradient ascent's collapse rate to the retain dataset, whereas NPO is shown to have a logarithmic bound. We used $1\cdot 10^{-6}$ as our learning rate, as it showed us to give the best results.</p>
 <h3>Results</h3>
 <p>We first give our results for the WLU task.</p>
-<div class="center-environment"><img src="Q3-06WLU.png" alt="Q3-06WLU" style="width: 45%; height: auto" />
-<img src="Q3-06LU.png" alt="Q3-06LU" style="width: 45%; height: auto" /><div class="image-caption">Figure 3: Q3-06's results on WLU and LU.</div></div>
+<div class="center-environment"><img src="6.7960 Final Project/Q3-06WLU.png" alt="Q3-06WLU" style="width: 45%; height: auto" />
+<img src="6.7960 Final Project/Q3-06LU.png" alt="Q3-06LU" style="width: 45%; height: auto" /><div class="image-caption">Figure 3: Q3-06's results on WLU and LU.</div></div>
 
-<div class="center-environment"><img src="MetaWLU.png" alt="MetaWLU" style="width: 45%; height: auto" />
-<img src="MetaLU.png" alt="MetaLU" style="width: 45%; height: auto" /><div class="image-caption">Figure 4: Meta's results on WLU and LU.</div></div>
+<div class="center-environment"><img src="6.7960 Final Project/MetaWLU.png" alt="MetaWLU" style="width: 45%; height: auto" />
+<img src="6.7960 Final Project/MetaLU.png" alt="MetaLU" style="width: 45%; height: auto" /><div class="image-caption">Figure 4: Meta's results on WLU and LU.</div></div>
 
-<div class="center-environment"><img src="Q3-17WLU.png" alt="Q3-17WLU" style="width: 45%; height: auto" />
-<img src="Q3-17LU.png" alt="Q3-17LU" style="width: 45%; height: auto" /><div class="image-caption">Figure 5: Q3-17's results on WLU and LU.</div></div>
+<div class="center-environment"><img src="6.7960 Final Project/Q3-17WLU.png" alt="Q3-17WLU" style="width: 45%; height: auto" />
+<img src="6.7960 Final Project/Q3-17LU.png" alt="Q3-17LU" style="width: 45%; height: auto" /><div class="image-caption">Figure 5: Q3-17's results on WLU and LU.</div></div>
 
 <p>Now, we show our results for the semantically related task.</p>
-<div class="center-environment"><img src="Q3-06Far.png" alt="Q3-06Far" style="width: 45%; height: auto" />
-<img src="Q3-06Close.png" alt="Q3-06Close" style="width: 45%; height: auto" /><div class="image-caption">Figure 6: Q3-06's results on semantically related topics.
+<div class="center-environment"><img src="6.7960 Final Project/Q3-06Far.png" alt="Q3-06Far" style="width: 45%; height: auto" />
+<img src="6.7960 Final Project/Q3-06Close.png" alt="Q3-06Close" style="width: 45%; height: auto" /><div class="image-caption">Figure 6: Q3-06's results on semantically related topics.
 <br>
 The unlearned accuracies were Physics: $6\%$, Mathematics: $14\%$ for Close.
 <br>
 The unlearned accuracies were Physics: $4\%$, Mathematics: $40\%$ for Far</div></div>
 
-<div class="center-environment"><img src="Meta1BClose.png" alt="Meta1BClose" style="width: 45%; height: auto" />
-<img src="Meta1BFar.png" alt="Meta1BFar" style="width: 45%; height: auto" /><div class="image-caption">Figure 7: Meta's results on semantically related topics.
+<div class="center-environment"><img src="6.7960 Final Project/Meta1BClose.png" alt="Meta1BClose" style="width: 45%; height: auto" />
+<img src="6.7960 Final Project/Meta1BFar.png" alt="Meta1BFar" style="width: 45%; height: auto" /><div class="image-caption">Figure 7: Meta's results on semantically related topics.
 <br>
 The unlearned accuracies were Physics: $4\%$, Mathematics: $8\%$ for Close.
 <br>
 The unlearned accuracies were Physics: $1\%$, Mathematics: $10\%$ for Far.</div></div>
 
-<div class="center-environment"><img src="Q3-17Far.png" alt="Q3-17Far" style="width: 45%; height: auto" />
-<img src="Q3-17Close.png" alt="Q3-17Close" style="width: 45%; height: auto" /><div class="image-caption">Figure 8: Q3-17's results on semantically related topics.
+<div class="center-environment"><img src="6.7960 Final Project/Q3-17Far.png" alt="Q3-17Far" style="width: 45%; height: auto" />
+<img src="6.7960 Final Project/Q3-17Close.png" alt="Q3-17Close" style="width: 45%; height: auto" /><div class="image-caption">Figure 8: Q3-17's results on semantically related topics.
 <br>
 The unlearned accuracies were Physics: $9\%$, Mathematics: $21$% for Close.
 <br>
