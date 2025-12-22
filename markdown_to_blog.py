@@ -126,7 +126,7 @@ def load_citations(json_path=CITATIONS_FILE, bib_path=BIB_FILE):
 CITATIONS = load_citations()
 
 MATH_BLOCK_PATTERN = re.compile(
-    r'(\$\$.*?\$\$|\$.*?\$|\\\((?:.|\n)*?\\\)|\\\[(?:.|\n)*?\\\]|\\begin\{align\*\}(?:.|\n)*?\\end\{align\*\})',
+    r'(\$\$.*?\$\$|\$.*?\$|\\\((?:.|\n)*?\\\)|\\\[(?:.|\n)*?\\\]|\\begin\{align\*\}(?:.|\n)*?\\end\{align\*\}|\\begin\{align\}(?:.|\n)*?\\end\{align\}|\\begin\{equation\*?\}(?:.|\n)*?\\end\{equation\*?\})',
     re.DOTALL,
 )
 SUBSCRIPT_TEXT_PATTERN = re.compile(r'(_\{)\\text\{([^{}]+)\}')
@@ -147,19 +147,30 @@ MATH_PLACEHOLDER_PATTERN = re.compile(r'@@MATH(\d+)@@')
 def create_blog_html(title, date, content, math=True, authors=None):
     """Create HTML blog post matching the existing format"""
     
-    # MathJax script if math is enabled
-    mathjax_script = '''
-    <!-- MathJax Configuration -->
-    <script>
-        MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
-                displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']]
-            }
-        };
-    </script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>''' if math else ''
+    # KaTeX script if math is enabled (better \min rendering)
+    katex_script = '''
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
+    
+    <!-- KaTeX JavaScript -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" integrity="sha384-cpW21h6RZv/phavutF+AuVYrr+dA8xD9zs6FwLpaCct6O9ctzYFfFr4dgmgccOTx" crossorigin="anonymous"></script>
+    
+    <!-- KaTeX auto-render extension -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+        onload="renderMathInElement(document.body, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\\\[', right: '\\\\]', display: true},
+                {left: '\\\\(', right: '\\\\)', display: false},
+                {left: '\\\\begin{align*}', right: '\\\\end{align*}', display: true},
+                {left: '\\\\begin{align}', right: '\\\\end{align}', display: true}
+            ],
+            ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            ignoredClasses: ['no-katex'],
+            throwOnError: false,
+            strict: false
+        });"></script>''' if math else ''
     
     pseudocode_assets = '''
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css">
@@ -217,7 +228,7 @@ document.addEventListener('DOMContentLoaded', function() {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">{pseudocode_assets}{mathjax_script}
+    <link rel="stylesheet" href="style.css">{pseudocode_assets}{katex_script}
 </head>
 <body>
     <div class="container">
@@ -717,11 +728,35 @@ def preprocess_latex_text(markdown_content):
 def restore_math_blocks(html_content, math_blocks):
     if not math_blocks:
         return html_content
-    html_content = re.sub(r'<p>\s*(%s)\s*</p>' % MATH_PLACEHOLDER_PATTERN.pattern, r'\1', html_content)
+    
+    # First restore the math blocks
     def repl(match):
         idx = int(match.group(1))
-        return math_blocks[idx] if 0 <= idx < len(math_blocks) else match.group(0)
-    return MATH_PLACEHOLDER_PATTERN.sub(repl, html_content)
+        if 0 <= idx < len(math_blocks):
+            return math_blocks[idx]
+        return match.group(0)
+    
+    html_content = MATH_PLACEHOLDER_PATTERN.sub(repl, html_content)
+    
+    # Now clean up paragraph tags around display math
+    # Remove paragraph tags that only contain display math
+    html_content = re.sub(r'<p>\s*(\\begin\{[^}]+\}.*?\\end\{[^}]+\})\s*</p>', r'\1', html_content, flags=re.DOTALL)
+    html_content = re.sub(r'<p>\s*(\$\$.*?\$\$)\s*</p>', r'\1', html_content, flags=re.DOTALL)
+    html_content = re.sub(r'<p>\s*(\\\\?\[.*?\\\\?\])\s*</p>', r'\1', html_content, flags=re.DOTALL)
+    
+    # Handle math at the end of paragraphs
+    html_content = re.sub(r'<p>([^<]*?)(\\begin\{[^}]+\}.*?\\end\{[^}]+\})', r'<p>\1</p>\2', html_content, flags=re.DOTALL)
+    html_content = re.sub(r'<p>([^<]*?)(\$\$.*?\$\$)', r'<p>\1</p>\2', html_content, flags=re.DOTALL)
+    
+    # Handle math at the start of paragraphs  
+    html_content = re.sub(r'(\\begin\{[^}]+\}.*?\\end\{[^}]+\})([^<]*?)</p>', r'\1<p>\2</p>', html_content, flags=re.DOTALL)
+    html_content = re.sub(r'(\$\$.*?\$\$)([^<]*?)</p>', r'\1<p>\2</p>', html_content, flags=re.DOTALL)
+    
+    # Clean up empty paragraphs and extra whitespace
+    html_content = re.sub(r'<p>\s*</p>', '', html_content)
+    html_content = re.sub(r'</p>\s*<p>', '</p>\n<p>', html_content)
+    
+    return html_content
 
 def convert_markdown_to_html(markdown_content):
     """Convert markdown to HTML with math support"""

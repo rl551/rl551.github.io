@@ -11,17 +11,28 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/pseudocode@latest/build/pseudocode.min.js"></script>
     
-    <!-- MathJax Configuration -->
-    <script>
-        MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
-            }
-        };
-    </script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- KaTeX CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css" integrity="sha384-GvrOXuhMATgEsSwCs4smul74iXGOixntILdUW9XmUC6+HX0sLNAK3q71HotJqlAn" crossorigin="anonymous">
+    
+    <!-- KaTeX JavaScript -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js" integrity="sha384-cpW21h6RZv/phavutF+AuVYrr+dA8xD9zs6FwLpaCct6O9ctzYFfFr4dgmgccOTx" crossorigin="anonymous"></script>
+    
+    <!-- KaTeX auto-render extension -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" integrity="sha384-+VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4+/RRE05" crossorigin="anonymous"
+        onload="renderMathInElement(document.body, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false},
+                {left: '\\[', right: '\\]', display: true},
+                {left: '\\(', right: '\\)', display: false},
+                {left: '\\begin{align*}', right: '\\end{align*}', display: true},
+                {left: '\\begin{align}', right: '\\end{align}', display: true}
+            ],
+            ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            ignoredClasses: ['no-katex'],
+            throwOnError: false,
+            strict: false
+        });"></script>
 </head>
 <body>
     <div class="container">
@@ -46,20 +57,17 @@
                     
                     <div class="blog-content">
                         <h2>Introduction and Background</h2>
-<p>Large Language Models (LLMs) have excelled at their ability to learn, retain, and apply vast amounts of human knowledge. However, having an AI understand data to this scale poses serious safety risks for humanity. It has become increasingly important to develop <strong>machine unlearning</strong> techniques, a process which selectively removes information that humans want LLMs to forget. Such information includes copyright text and instructions to create hazardous materials. In an ideal world, proper unlearning should make it very difficult for models to "relearn" the unlearned information. Additionally, unlearning should isolate a topic such that even if we manage to relearn a topic, we only learn this in isolation. However, in practice, current unlearning techniques are fragile and often easily bypassed through adversarial relearning. In particular, <span class="citation"><a href="https://arxiv.org/abs/2502.17424" target="_blank" rel="noopener">Betley et al. (2025)</a></span> demonstrates that fine tuning on a single topic may elicit broad effects on multiple topics that we attempted to forget in post-training. Furthermore, <span class="citation"><a href="https://openreview.net/forum?id=fMNRYBvcQN" target="_blank" rel="noopener">Hu et al. (2025)</a></span> demonstrates that current unlearning techniques may merely <em>obfuscate</em> the information&mdash;suppressing the model's likelihood of generating it&mdash;rather than actually unlearning it. They show that this such information can be relearned through novel relearning attacks. This motivates the problem of adversarial relearning: if an attacker wanted to relearn a restricted subject, we would want them to relearn it in an isolated way.</p>
-
-</p>
+<p>Large Language Models (LLMs) have excelled at their ability to learn, retain, and apply vast amounts of human knowledge. However, having an AI understand data to this scale poses serious safety risks for humanity. It has become increasingly important to develop <strong>machine unlearning</strong> techniques, a process which selectively removes information that humans want LLMs to forget. Such information includes copyright text and instructions to create hazardous materials. In an ideal world, proper unlearning should make it very difficult for models to "relearn" the unlearned information. Additionally, unlearning should isolate a topic such that even if we manage to relearn a topic, we only learn this in isolation. However, in practice, current unlearning techniques are fragile and often easily bypassed through adversarial relearning. In particular, <span class="citation"><a href="https://arxiv.org/abs/2502.17424" target="_blank" rel="noopener">Betley et al. (2025)</a></span> demonstrates that fine tuning on a single topic may elicit broad effects on multiple topics that we attempted to forget in post-training. Furthermore, <span class="citation"><a href="https://openreview.net/forum?id=fMNRYBvcQN" target="_blank" rel="noopener">Hu et al. (2025)</a></span> demonstrates that current unlearning techniques may merely <em>obfuscate</em> the information&mdash;suppressing the model's likelihood of generating it&mdash;rather than actually unlearning it. Moreover, they show that this such information can be relearned through novel relearning attacks.</p>
 <p><span class="citation"><a href="https://arxiv.org/abs/2505.09500" target="_blank" rel="noopener">Qian et al. (2025)</a></span> introduced a novel algorithm called <strong>Layered Unlearning</strong> (LU) which tries to solve the problem of adversarial relearning. Conceptually, LU unlearns a forget data set in layers (that we will now refer to as "folds"), rather than all at once. The below image is taken from their paper, which rigorously presents the algorithm.</p>
 <div class="image-with-caption"><img src="6.7960 Final Project/Algorithm1.png" alt="Algorithm1" style="width: 100%; height: auto" /><div class="image-caption">Figure 1: <span class="citation"><a href="https://arxiv.org/abs/2505.09500" target="_blank" rel="noopener">Qian et al. (2025)</a></span>'s LU algorithm</div></div>
 
 <p>As a practical example, we can imagine this to be a dataset containing 3 distinct subjects: bioweapons, hacking, and personal data. We start by attempting to forget bioweapons, but try to retain hacking and personal data. In the next iteration, we add the hacking dataset to the forget set and remove it from the retain set. We repeat until we have forgotten all of the information.</p>
-<p> Through our research, we want to explore modifications and applications of the LU algorithm that minimize the effect of relearning one subject on the accuracy of other subjects.</p>
 <h2>Research Questions and Motivation</h2>
 <h3>Weighted Layered Unlearning</h3>
 <p>One question about the LU algorithm that naturally arises is the unevenness of data unlearning. For example, we will only spend one iteration unlearning the last dataset in the sequence whereas we will spend multiple iterations unlearning the first dataset in the sequence. Moreover, for half the datasets in the sequence, we spend more time trying to retain them than unlearn them.</p>
 <p>We propose a simple but novel modification that we hope will alleviate this problem. The modification comes from the intuitive understanding that the time it takes to unlearn a set of information is directly proportional to the set's size. More specifically, we weight the size of a forget dataset proportionally to the amount of iterations we spend unlearning it in order to give each fold an "equal" layer of protection. That is, $|F_i|\propto k+1-i$. We describe our modified algorithm, called <strong>Weighted Layered Unlearning</strong> (WLU) below.</p>
 <div class="image-with-caption"><img src="6.7960 Final Project/WLU.png" alt="WLU" style="width: 100%; height: auto" /><div class="image-caption">Figure 2: Weighted Layered Unlearning Algorithm</div></div>
-<p>Formally, our research question is: How does WLU compare to LU in terms of adversarial relearning?</p>
+
 <h3>Semantically Related Topics</h3>
 <p>The beauty of the LU algorithm is that it forces the model to learn separate mechanisms that inhibit knowledge on each specific fold, not just the entire dataset in general. While LU effectively forces the model to construct distinct inhibition mechanisms for specific data folds, a critical gap remains in understanding the importance of the ordering of the forget dataset sequence.
 This is particularly evident when unlearning semantically related topics. For example, we would intuitively expect that unlearning a subject like mathematics would inherently degrade a model's proficiency in physics, given the high degree of shared representations between the two domains. Given that our own brains tend to have shared inductive biases between these subjects, we investigate whether their placement in the forget dataset sequence impacts the model's post-unlearning results.</p>
@@ -67,7 +75,7 @@ This is particularly evident when unlearning semantically related topics. For ex
 <li><strong>Semantic Clustering:</strong> Does clustering related topics (i.e. unlearning them at consecutive or close indices in the forget dataset) result in a cleaner, more complete erasure of the topics?</li>
 <li><strong>Semantic Spacing:</strong> Conversely, does unlearning them at spread out indices (with unrelated topics in between) yield better and more stable results?</li>
 </ul>
-<p>This research moves beyond simple data deletion to explore the optimal topology of the unlearning sequence, aiming to maximize erasure on related concepts and minimize the effect of adversarial relearning.</p>
+<p>This research moves beyond simple data deletion to explore the optimal topology of the unlearning sequence, aiming to maximize erasure on related concepts.</p>
 <h2>Research Methods and Results</h2>
 <p>In this section, we give a formal overview of our research methods and results.</p>
 <h3>Methods</h3>
@@ -88,10 +96,10 @@ This is particularly evident when unlearning semantically related topics. For ex
 <p>As shown, one sequence has the semantically related topics (math and physics) in consecutive indices, whereas the other sequence places them far apart. For our evaluation, we will attempt to relearn physics and then see the performance on math. We will also attempt to relearn math and see the performance on physics. We do this for both forget sequences after unlearning. </p>
 <p>Our specific "performance evaluation" after relearning will be a simple MCQ evaluation. The respective model will be given $100$ MCQ questions and will be asked to output its answer in exactly $1$ token. Its performance will be the number of questions answered correctly divided by $100$. A lower performance means better unlearning results, as the model has difficulty relearning.</p>
 <p>We unlearn the training data using NPO (Negative Preference Optimization) and then attempt to relearn the data using DPO (Direct Preference Optimization). NPO can be viewed as DPO (Direct Preference Optimization) without any positive samples. We can see this difference in their loss functions.
-\begin{align*}
+</p>\begin{align*}
     \mathcal{L}_{\mathsf{DPO}}&=-\mathbb{E}\left[\log\sigma\left(\beta\log\frac{\pi_\theta(y_w\mid x)}{\pi_{\mathsf{ref}}(y_w\mid x)}-\beta\log\frac{\pi_\theta(y_\ell\mid x)}{\pi_{\mathsf{ref}}(y_\ell\mid x)}\right)\right] \\
     \mathcal{L}_{\mathsf{NPO}}&=-\mathbb{E}\left[\log\sigma\left(-\beta\log\frac{\pi_\theta(y\mid x)}{\pi_{\mathsf{ref}}(y\mid x)}\right)\right].
-\end{align*}</p>
+\end{align*}
 <p>In particular, in the DPO loss function, $y_w$ is the winning response and $y_\ell$ is the losing response. We select NPO as our unlearning function for its stability in contrast to the more standard approach, gradient ascent. Indeed, <span class="citation"><a href="https://openreview.net/forum?id=MXLBXjQkmb" target="_blank" rel="noopener">Zhang et al. (2024)</a></span> gives significant empirical evidence that gradient ascent has significantly higher probability of suffering a catastrophic collapse of the model's abilities on several unlearning tasks and that NPO manages to forget more than other methods. This idea can also be justified theoretically since gradient ascent maximizes loss on the forget set, which means it naturally leads to more unbounded results. In particular, <span class="citation"><a href="https://openreview.net/forum?id=MXLBXjQkmb" target="_blank" rel="noopener">Zhang et al. (2024)</a></span> gives a linear bound for gradient ascent's collapse rate to the retain dataset, whereas NPO is shown to have a logarithmic bound. We used $1\cdot 10^{-6}$ as our learning rate, as it showed us to give the best results.</p>
 <h3>Results</h3>
 <p>We first give our results for the WLU task.</p>
@@ -132,7 +140,7 @@ The unlearned accuracies were Physics: $8\%$, Mathematics: $57\%$ for Far.</div>
 <p>Our results show that WLU performs nontrivially better than LU. For example, in Q3-06, WLU only achieved a maximal $14\%$ increase in performance for a task whereas LU yields multiple increases $\geq 20\%$. The difference is even more stark in Q3-17. LU performs quite poorly on this model, and achieves many accuracy increases $\geq 40\%$ after retraining. The performance of WLU is much more stable, and mostly achieves accuracy increases around or under $10\%$.</p>
 <p>As mentioned before, we hypothesize this has to do a lot because of the more evenly distributed unlearning that WLU performs.</p>
 <h3>Semantically Related Topics</h3>
-<p>Unfortunately, we found no significant difference in performance between clustering semantically related topics and spreading them out. For example, in Q3-06, having the semantically related topics close together and far apart yielded no difference in results. </p>
+<p>Unfortunately, we found no significant difference in performance between clustering semantically related topics and spreading them out. For example, in Q3-06, having the semantically related topics close and far yielded no difference in results. </p>
 <p>One possible reason for the lack of results is because of our small dataset. We trained on only around $50$ questions for each subject in the MMLU dataset. It may be the case that only having $2$ semantically related topics in between math and physics may not be enough to create a noticeable difference in performance. Perhaps more diversification into the humanities, arts, and other miscellaneous topics would have yielded better results.</p>
 <p>Another possible reason was because the later forget sets in the training runs had high variance in the unlearning accuracies. For example, Q3-17, Far finished with $57\%$ accuracy on Math, whereas Q3-17, Close finished with only $21\%$ accuracy. Because the starting points were so different, comparing the relative relearning gain may be influenced by a confounding variable.</p>
 <h2>Conclusion and Further Directions</h2>
