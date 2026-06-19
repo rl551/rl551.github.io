@@ -236,8 +236,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <h1>Raymond Luo</h1>
             <nav>
                 <a href="index.html">About</a>
+                <a href="research.html">Research</a>
                 <a href="projects.html">Projects</a>
                 <a href="blog.html">Blog</a>
+                <a href="reading_list.html">Reading List</a>
             </nav>
         </header>
 

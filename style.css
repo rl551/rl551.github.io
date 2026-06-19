@@ -122,6 +122,65 @@ a:hover {
     margin-bottom: 8px;
 }
 
+.project-authors {
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Resume */
+.resume-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 0;
+}
+
+.resume-date {
+    white-space: nowrap;
+}
+
+.resume-subline {
+    color: #666;
+    font-style: italic;
+    margin-top: 0;
+}
+
+.resume-list {
+    list-style-position: inside;
+    margin-bottom: 15px;
+}
+
+.resume-entry {
+    margin-bottom: 24px;
+}
+
+.resume-entry-title {
+    color: #111;
+    font-size: inherit;
+    font-weight: 400;
+    line-height: inherit;
+    margin-bottom: 6px;
+}
+
+.resume-entry-title a {
+    color: #666;
+    text-decoration: underline;
+}
+
+.resume-entry-meta {
+    margin-bottom: 10px;
+}
+
+.resume-bullets {
+    list-style-position: outside;
+    margin-left: 18px;
+    margin-bottom: 15px;
+}
+
+.resume-bullets li {
+    line-height: 1.6;
+}
+
 /* Footer */
 footer {
     margin-top: 40px;
@@ -371,59 +430,12 @@ footer p {
     text-decoration: underline;
 }
 
-/* Contact Buttons */
-.contact-buttons {
+/* Contact Links */
+.contact-links {
     display: flex;
-    gap: 15px;
+    gap: 2.5rem;
     justify-content: center;
     margin-bottom: 20px;
-}
-
-.btn {
-    padding: 12px;
-    border-radius: 50%;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1.2rem;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid;
-    width: 45px;
-    height: 45px;
-}
-
-.btn-email {
-    background-color: #0066cc;
-    color: white;
-    border-color: #0066cc;
-    font-size: 1.6rem;
-    line-height: 1;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    vertical-align: middle;
-    text-align: center;
-    padding-top: 10px;
-}
-
-.btn-email:hover {
-    background-color: #0052a3;
-    border-color: #0052a3;
-    text-decoration: none;
-}
-
-.btn-linkedin {
-    background-color: #0066cc;
-    color: white;
-    border-color: #0066cc;
-}
-
-.btn-linkedin:hover {
-    background-color: #0052a3;
-    border-color: #0052a3;
-    text-decoration: none;
 }
 
 /* Company names - less intense bold */
@@ -436,6 +448,22 @@ h3 em {
     font-weight: 300;
     font-size: 0.85em;
     float: right;
+}
+
+/* Reading List */
+.reading-section {
+    margin-bottom: 30px;
+}
+
+.reading-section ul {
+    margin-bottom: 18px;
+    padding-left: 25px;
+    list-style-type: disc;
+}
+
+.reading-section li {
+    margin-bottom: 8px;
+    line-height: 1.6;
 }
 
 /* Responsive Design */
@@ -454,14 +482,8 @@ h3 em {
         margin-bottom: 5px;
     }
     
-    .contact-buttons {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
-    
-    .btn {
-        width: 45px;
-        height: 45px;
+    .contact-links {
+        flex-wrap: wrap;
+        gap: 1.5rem;
     }
 } 
