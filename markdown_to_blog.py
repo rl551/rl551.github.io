@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title} - Raymond Luo</title>
+    <title>{title} - Ruiyang (Raymond) Luo</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <body>
     <div class="container">
         <header>
-            <h1>Raymond Luo</h1>
+            <h1>Ruiyang (Raymond) Luo</h1>
             <nav>
                 <a href="index.html">About</a>
                 <a href="research.html">Research</a>
